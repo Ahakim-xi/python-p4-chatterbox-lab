@@ -11,8 +11,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 
 CORS(app)
+
 migrate = Migrate(app, db)
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 # GET all messages, POST new message
 @app.route('/messages', methods=['GET', 'POST'])
