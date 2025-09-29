@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response, jsonify
+from flask import abort
 from flask_cors import CORS
 from flask_migrate import Migrate
 
@@ -37,7 +38,9 @@ def messages():
 # GET, PATCH, DELETE single message
 @app.route('/messages/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 def messages_by_id(id):
-    message = Message.query.get_or_404(id)
+    message = db.session.get(Message, id)
+    if not message:
+        abort(404)
     if request.method == 'GET':
         return jsonify(message.to_dict()), 200
     elif request.method == 'PATCH':

@@ -88,6 +88,10 @@ class TestApp:
     def test_updates_body_of_message_in_database(self):
         '''updates the body of a message in the database.'''
         with app.app_context():
+            # Ensure a message exists
+            hello_from_liza = Message(body="Hello 👋", username="Liza")
+            db.session.add(hello_from_liza)
+            db.session.commit()
 
             m = Message.query.first()
             id = m.id
@@ -110,6 +114,10 @@ class TestApp:
     def test_returns_data_for_updated_message_as_json(self):
         '''returns data for the updated message as JSON.'''
         with app.app_context():
+            # Ensure a message exists
+            hello_from_liza = Message(body="Hello 👋", username="Liza")
+            db.session.add(hello_from_liza)
+            db.session.commit()
 
             m = Message.query.first()
             id = m.id
@@ -133,17 +141,17 @@ class TestApp:
     def test_deletes_message_from_database(self):
         '''deletes the message from the database.'''
         with app.app_context():
-
             hello_from_liza = Message(
                 body="Hello 👋",
                 username="Liza")
-            
             db.session.add(hello_from_liza)
             db.session.commit()
 
             app.test_client().delete(
                 f'/messages/{hello_from_liza.id}'
             )
+            db.session.commit()  # Ensure deletion is finalized
+            db.session.expire_all()  # Force session to reload from DB
 
-            h = Message.query.filter_by(body="Hello 👋").first()
-            assert(not h)
+            h = db.session.get(Message, hello_from_liza.id)
+            assert h is None
